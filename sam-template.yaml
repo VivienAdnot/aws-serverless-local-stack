@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+  StackLocalBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+
+  StackLocalNotesFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: StackLocalNotesFunction
+      Handler: notes.handler
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          BUCKET: !Ref StackLocalBucket
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref StackLocalBucket
+            Actions:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+              - s3:DeleteObject
+        - AWSLambdaBasicExecutionRole  # Assuming your Lambda needs basic execution role permissions
+      Events:
+        GetAll:
+          Type: HttpApi
+          Properties:
+            Path: /notes
+            Method: GET
+        GetById:
+          Type: HttpApi
+          Properties:
+            Path: /notes/{id}
+            Method: GET
+        Post:
+          Type: HttpApi
+          Properties:
+            Path: /notes/{id}
+            Method: POST
+        Delete:
+          Type: HttpApi
+          Properties:
+            Path: /notes/{id}
+            Method: DELETE
+
+Outputs:
+  ApiEndpoint:
+    Description: "The invoke URL for our HTTP API"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref BucketName
