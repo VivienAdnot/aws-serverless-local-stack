@@ -8,12 +8,13 @@ const {
 
 const get = require("lodash.get");
 
-const S3 = new S3Client({});
-const bucketName = process.env.BUCKET;
-
 const handler = async (event) => {
   try {
     const noteName = get(event, "pathParameters.id");
+    const bucketName = process.env.BUCKET;
+    console.log('bucketName: ', bucketName);
+
+    const S3 = new S3Client({});
 
     // GET all notes
     if (event.routeKey === "GET /notes") {

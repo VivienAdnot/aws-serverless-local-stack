@@ -2,32 +2,32 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 
 Parameters:
-  BucketName:
+  S3BucketName:
     Type: String
     Description: Name of the S3 bucket
 
 Globals:
   Function:
-    Timeout: 10
+    Timeout: 30
 
 Resources:
   StackLocalBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Ref BucketName
+      BucketName: !Ref S3BucketName
 
   StackLocalNotesFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: StackLocalNotesFunction
       Handler: notes.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs16.x
       Environment:
         Variables:
-          BUCKET: !Ref StackLocalBucket
+          BUCKET: !Ref S3BucketName
       Policies:
         - S3CrudPolicy:
-            BucketName: !Ref StackLocalBucket
+            BucketName: !Ref S3BucketName
             Actions:
               - s3:GetObject
               - s3:PutObject
@@ -62,4 +62,4 @@ Outputs:
     Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
   BucketName:
     Description: Name of the S3 bucket
-    Value: !Ref BucketName
+    Value: !Ref S3BucketName
